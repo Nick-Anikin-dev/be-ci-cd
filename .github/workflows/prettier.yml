@@ -1,4 +1,4 @@
-name: eslint
+name: prettier
 
 on:
   push:
@@ -9,15 +9,20 @@ on:
 jobs:
   eslint:
     runs-on: ubuntu-latest
+    container:
+      image: node:20.13.1-alpine
     steps:
       - uses: actions/checkout@v2
-      - name: Install NVM
-        run:  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-      - name: Export NVM directory
+      - name: Cache node modules
+      - uses: actions/cache@v2
         env:
-          NODE_VERSION: 20.13.1  
-        run: export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh" --no-use
+          cahce-name: npm-${{ hashFiles('package-lock.json') }}
+        with:
+          path: ~/.npm
+          key: ${{ env.cache-name }}
+          restore-key: |
+            ${{ env.cache-name }}  
       - name: Install dependencies
         run: npm install
-      - name: Lint source code with ESLint
+      - name: Format source code with prettier
         run: npm run format
